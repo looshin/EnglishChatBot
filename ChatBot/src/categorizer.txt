@@ -1,0 +1,2 @@
+greetings hi Hi hello Hello 
+endconvo bye-bye goodbye bye Bye-bye Goodbye Bye

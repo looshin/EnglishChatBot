@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-12">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="opennlp-es-pos-perceptron-pos-es.model"/>
+	<classpathentry kind="lib" path="/Users/sorbet/Downloads/apache-opennlp-2.0.0/lib/opennlp-tools-2.0.0.jar" sourcepath="/Users/sorbet/Downloads/apache-opennlp-2.0.0-src"/>
+	<classpathentry kind="lib" path="/Users/sorbet/Downloads/en-sent.bin"/>
+	<classpathentry kind="lib" path="en-token.bin"/>
+	<classpathentry kind="lib" path="en-lemmatizer.bin"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
