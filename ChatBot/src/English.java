@@ -2,10 +2,10 @@
 // CS 3 Summer 2022-2023
 // Final Project: Language Chatbot
 // 7/25/22
-// An intelligent chatbot that converses with a Spanish learner
+// An intelligent chatbot that converses with the English learner
 // Language processing API: Apache OpenNPL - https://opennlp.apache.org/
-// Spanish Parts of Speech ML Model - https://cavorite.com/labs/nlp/opennlp-models-es/
-// Spanish
+// English Parts of Speech ML Model - https:http://opennlp.sourceforge.net/models-1.5/
+// English
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,13 +47,15 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
 public class English {
-
+//Adding instance variables and variables within the constructor
 	private static Map<String, String> questionAnswer = new HashMap<>();
+	private static boolean currentConvo; //currntConvo is the boolean that tells if a conversation is in progress
 	private static ArrayList<String> categories;
-	private static ArrayList<String> words = new ArrayList<>(); 
-	private static boolean currentConvo;
-	private static Queue<String> PartsOfSpeech = new LinkedList<>();
-	private static Queue<String> CurrentWords = new LinkedList<>();
+	
+	//Class variables
+	private static ArrayList<String> words = new ArrayList<>(); //words are the expanded vocab of the bot
+	private static Queue<String> PartsOfSpeech = new LinkedList<>(); //PartsOfSpeech is a list with all of the parts of speech
+	private static Queue<String> CurrentWords = new LinkedList<>(); //current words are the bots vocab for a certain input
 
 	public English(ArrayList<String> answerCategories) {
 		questionAnswer = new HashMap<>();
@@ -70,33 +72,34 @@ public class English {
 	 */
 	public void runBot() throws FileNotFoundException, IOException {
 		try {
-			createAnswers();
+			createAnswers(); //We call createAnswers method
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 
-		DoccatModel model = trainSpanishModel();
+		DoccatModel model = trainSpanishModel(); //define a new model
 		
 
 		Scanner scan = new Scanner(System.in);
 
-		
-		Pronouns.add("It"); //not necessary anymore i would say
 		while (currentConvo) {
 			// getting user input
 			System.out.print("You: ");
 			String userInput = scan.nextLine();
 
+			//Adds sentences to string array
 			String[] sentences = detectSentences(userInput);
 
+			//Initialize response
 			String response = "";
 
+			//For each sentence we get a response
 			for (String s : sentences) {
 				response += getResponse(s, model);
 
 			}
 			
-
+			//Print out Paul plus the response that the bot creates
 			System.out.println("Paul: " + response);
 
 		}
@@ -109,14 +112,15 @@ public class English {
 	 * Define all possible answers for each phrase category.
 	 */
 	public static void createAnswers() throws FileNotFoundException {
-
+		//For every string within the arraylist categories recieve data from the name of the category's associated file
 		for (String s : categories) {
 			File possibleAnswers = new File(String.valueOf(s) + ".txt"); //Getting default text extension
-			questionAnswer.put(s, getRandomAnswer(possibleAnswers)); //picks a random answer in psosible answers
+			questionAnswer.put(s, getRandomAnswer(possibleAnswers)); //picks a random answer in possible answers
 		}
 
 	}
 
+	//A list of the possible answers
 	private static ArrayList<String> possibleAnswerList = new ArrayList<>();
 	
 	/**
@@ -136,126 +140,114 @@ public class English {
 		}
 
 		
-		while (fileReader.hasNextLine()) {
+		while (fileReader.hasNextLine()) { 
 
-			// each possible response has its own line
+			// each possible response has its own line and is added to possibleAnswerList
 			possibleAnswerList.add(fileReader.nextLine());
 		}
 		fileReader.close();
-
+		
+		
 		Random rand = new Random();
 		int index = rand.nextInt(possibleAnswerList.size()); //chooses a random index
-		return possibleAnswerList.get(index);
+		return possibleAnswerList.get(index); //Returns an answer that is a random index
 	}
 	
 	
 	
-	
+	//Each arraylist represents a different part of speech
 	private static ArrayList<String> Pronouns = new ArrayList<>();
-//	private static String old;
 	private static ArrayList<Noun> NounsSingular = new ArrayList<>();
 	private static ArrayList<Noun> NounsPlural = new ArrayList<>();
 	private static ArrayList<Verb> Verbs = new ArrayList<>();
 	private static ArrayList<Adjective> Adjectives = new ArrayList<>();
-	private static ArrayList<Preposition> Preposition = new ArrayList<>();
 	private static ArrayList<Adverb> Adverbs = new ArrayList<>();
 	private static ArrayList<Verb> VerbPastTense = new ArrayList<>();
 	private static ArrayList<Verb> VerbSingular3 = new ArrayList<>();
 	private static ArrayList<Verb> VerbSingularNon3 = new ArrayList<>();
-	private static String subject = "yourself";
-	private static String subjectPlural;
+	
+	//The current subject is kept track of
+	private static String subject = "The conversation";
+	private static String subjectPlural = "Your kind words";
+	
+	//The parts of speech in order to be sorted into arrayLists must be sorted in a hashmap first
 	private static Map<String, String> wordTypes = new HashMap<String, String>();
 	
 
 	
-	
+	/*
+	 * Traverses through queues and adds the values of them to a hashmap for these value to later be sorted in another way
+	 * @param pos is a queue that stores the parts of speech within a user's input
+	 * @param currentWords is a queue that stores the currentWords within a user's input
+	 */
 	public static void  whatWord(Queue<String> pos, Queue<String> currentWords) {
-		//Get subject, below plus s is in subject 
-//		if(s.charAt(s.length()-1) == 's') {
-//			//We know the word is a verb - present tense
-//			//Classify to verb
-//			Verb v = new Verb(s);
-//			Verbs.add(v);
-//			for (Verb verb : Verbs) {
-//				System.out.print(verb.getWord()+" ");
-//			}
-//		}
-//		
-//		System.out.println(getSubject(s));
-		
-//		if (s.equals("NN") || s.equals("NNP") || s.equals("NS") || s.equals("NNPS")) {
-//			
-//		}
-			
-//		String old = s;
+		//When we run this method we have already added to both queues
 		while (!pos.isEmpty() || (!currentWords.isEmpty())) {
-			String key = pos.remove();
+			String key = pos.remove(); //We traverse the queues adding to a hashmap
 			String value = currentWords.remove();
 			wordTypes.put(key, value);
 		}
+		//Classify the words into certain arraylists, basically we sort them
 		System.out.println(wordTypes);
 		classifyWords(wordTypes);
 	}
 	
+	/*
+	 * Classifies words and adds them to arrayLists depending on their key
+	 * @param words is  a hashmap that stores a word's part of speech as it's key, and the words as it's value
+	 */
 	public static void classifyWords(Map<String, String> words) {
-		for (String key: words.keySet()) {
+		//For the every single key in the hashmap 
+		for (String key: words.keySet()) { 
+			//Singular Nouns
 			if (key.equals("NN") || key.equals("NNP")) {
-				SingularNoun n = new SingularNoun(words.get(key));
-				NounsSingular.add(n);
-				subject  = "The "+ words.get(key);
-//				System.out.println("Singular Noun Successfully added");
+				SingularNoun n = new SingularNoun(words.get(key)); //We create a new Singular Noun
+				NounsSingular.add(n); //We add to the array that stores all singular Nouns
+				subject  = "The "+ words.get(key); //We keep track of the subject, it will always be a noun
 			}
+			//Plural Nouns -> Almost all parts of speech have the structure as commented above
 			if (key.equals("NNS") || key.equals("NNPS")) {
 				PluralNouns n = new PluralNouns(words.get(key));
 				NounsPlural.add(n);
 				subjectPlural = "The " + words.get(key);
 				System.out.println("Plural Noun Successfully added");
 			}
+			//Verbs
 			if (key.equals("VB")|| key.equals("VBG") || key.equals("VBN")) {
 				Verb v = new Verb(words.get(key));
 				Verbs.add(v);
-//				System.out.println("Verb sucessfully added");
 			}
+			//Past Tense verbs
 			if (key.equals("VBD")) {
 				VerbPastTense v = new VerbPastTense(words.get(key));
 				VerbPastTense.add(v);
-//				System.out.println("Past tense verb added");
 			}
+			//Non 3rd Person singular present verb
 			if (key.equals("VBP") && !words.get(key).equals("am") && !words.get(key).equals("are")) {
 				VerbSingularNon3 v = new VerbSingularNon3(words.get(key));
 				VerbSingularNon3.add(v);
-//				System.out.println("Non Third Person singular present verb added");
 			}
+			//3rd person singular present verb
 			if (key.equals("VBZ") && !words.get(key).equals("is")) {
 				VerbSingular3 v = new VerbSingular3(words.get(key));
 				VerbSingular3.add(v);
-//				System.out.println("Third Person singular present verb added");
 			}
-			
+			//Adjective
 			if (key.equals("JJ") || key.equals("JJR") || key.equals("JJS")) {
 				Adjective a = new Adjective(words.get(key));
 				Adjectives.add(a);
-//				System.out.println("Adjective sucessfully added");
 			}
+			//Adverbs
 			if (key.equals("RB")||key.equals("RBR") || key.equals("RBS")) {
 				if (!words.get(key).equals(words)) {
 					Adverb a = new Adverb(words.get(key));
 					Adverbs.add(a);
-//					System.out.println("Adverb added sucessfully");
 				}
 			}
 		}
 	}
 	
-	public static String getSubject(String s) {
-		
-		String subject = "";
-		if (!Pronouns.contains(s)) {
-			System.out.println(Pronouns.contains(s));
-		}
-		
-		return subject;
-	}
+
 	/**
 	 * Trains the chatbot model using the traning data provided in a txt file.
 	 *
@@ -292,10 +284,10 @@ public class English {
 	public static String[] detectSentences(String userInput)
 			throws IOException, FileNotFoundException {
 
-		InputStream modelIn = new FileInputStream("en-sent.bin");
+		InputStream modelIn = new FileInputStream("en-sent.bin"); //Scans the model file
 		SentenceDetectorME myCategorizer = new SentenceDetectorME(new SentenceModel(modelIn));
 		String[] sentences = myCategorizer.sentDetect(userInput);
-		return sentences;
+		return sentences; //Gets sentences user has inputed
 	}
 
 	
@@ -332,112 +324,131 @@ public class English {
 		
 		
 		
-		System.out.println(responseCateg);
-		if (responseCateg.equals("endconvo")) {
-			English.currentConvo = false;
+//		System.out.println(responseCateg);
+		if (responseCateg.equals("endconvo")) { //If the response is decided to be endconvo then end the conversation 
+			English.currentConvo = false; //Do this by changing the current conversation to false
 			String goodbyeResponse = questionAnswer.get("endconvo");
 			return " " + goodbyeResponse;
-		} else if (responseCateg.equals("greetings") && num == 0)  {
+		} else if (responseCateg.equals("greetings") && num == 0)  { //Only on the first iteration of the while loop does this run
 			num++;
 			return " " + questionAnswer.get("greetings");
 		} else {
-			return generateResponse();
+			return generateResponse(); //Otherwise we generate a response based on the bots vocab
 		}
 
 	}
 	
+	/*
+	 * Generates a response based off of the bot's vocab
+	 * @return is the response that is generated
+	 */
 	public static String generateResponse() {
-		System.out.println("                        "+ subject);
-		String response ="";
-		int randNum = (int)Math.floor(Math.random()*(2-2+1)+1);
-		System.out.println(words);
+//		System.out.println("                        "+ subject);
+		String response =""; //Initialize response variable
+		int randNum = (int)Math.floor(Math.random()*(2-2+1)+1); //Get a random number between one or two to answer a yes or no question
+//		System.out.println(words); 
+		//Common yes or no questions
 		if (wordTypes.containsValue("?") && (wordTypes.containsValue("Is") || wordTypes.containsValue("Am") || wordTypes.containsValue("Do"))) {
-			wordTypes.remove(".");
-			wordTypes.remove("VBZ");
-			if (randNum == 1) {
+			wordTypes.remove("."); //Must remove or change the value and key so the cycle does not repeat
+			wordTypes.remove("VBZ"); 
+			if (randNum == 1) { //Checks the value of random number
 				response = "yes";
 			} else {
 				response = "no";
 			}
 			return response;
 		} 
+		//For a non yes no question 
 		if (wordTypes.containsValue("?") && wordTypes.containsValue("Why")) {
 			wordTypes.remove(".");
-			int randNoun = (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
 			int randVerb = (int)Math.floor(Math.random()*(VerbSingular3.size()-2+1)+1);
 			int randAdv = (int)Math.floor(Math.random()*(Adverbs.size()-2+1)+1);
 			return "Because "+ subject + " " + Verbs.get(randVerb).getWord() + " " + Adverbs.get(randAdv).getWord();
 		}
 		
+		//For another non yes no question
 		if (wordTypes.containsValue("?") && wordTypes.containsValue("What")) {
 			wordTypes.remove(".");
 			wordTypes.remove("");
-			return "I don't know. How am I supposed to know. Literally Ulee Klebeck programmed me. Ask him.";
+			int randNoun = (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
+			return "Probably " + NounsSingular.get(randNoun).getWord();
 		}
 		
+		//For how are you
 		if (wordTypes.containsValue("?") && wordTypes.containsValue("How") && wordTypes.containsValue("are")) {
 			wordTypes.remove(".");
 			int randAdj = (int)Math.floor(Math.random()*(Adjectives.size()-2+1)+1);
 			return "I am " + Adjectives.get(randAdj).getWord();
 		}
 		
+		//For a how question
 		if (wordTypes.containsValue("?") && wordTypes.containsValue("How")) {
 			wordTypes.remove(".");
 			wordTypes.remove("WP");
 			int randNoun = (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
 			int randVerb = (int)Math.floor(Math.random()*(VerbSingular3.size()-2+1)+1);
-//			int randAdv = (int)Math.floor(Math.random()*(Adverbs.size()-2+1)+1);
-			return "Because "+ subject + " " + VerbSingularNon3.get(randVerb).getWord();
+			return "Because of "+ NounsPlural.get(randNoun).getWord();
 		}
+		
+		//Just any question
+		ArrayList<String> answers = new ArrayList<>();
+		answers.add("idk");
+		answers.add("I have no idea");
+		answers.add("Could not tell you");
+		answers.add("Ask a professional");
+		answers.add("Read a book");
 		if (wordTypes.containsValue("?")) {
 			wordTypes.remove(".");
-			return "Idk";
+			Random rand = new Random(); //Gets a random response
+			int index = rand.nextInt(answers.size()); 
+			return answers.get(index); 
 		}
+		
+		//Chooses a random structure/response
 		int randomStructure = (int)Math.floor(Math. random()*(8-1+1)+1);
 		if (randomStructure == 1) {
-			//Noun + verb + adjective
-			int randNoun = (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
 			int randVerb = (int)Math.floor(Math.random()*(VerbSingular3.size()-2+1)+1);
-			int randAdv = (int)Math.floor(Math.random()*(Adverbs.size()-2+1)+1);
+			int randAdv = (int)Math.floor(Math.random()*(Adverbs.size()-2+1)+1); 
+			//We choose random verbs within the bots vocab and return them
+			//Returns the current subject + verb + adverb
 			return subject + " " + VerbSingular3.get(randVerb).getWord() + " " + Adverbs.get(randAdv).getWord();
 		} else if (randomStructure == 2){
 			//Noun verb
-			int randNoun = (int)Math.floor(Math.random()*(NounsPlural.size()-2+1)+1);
-			
 			int randVerb = (int)Math.floor(Math.random()*(VerbSingularNon3.size()-2+1)+1);
-			return subjectPlural+ " " + VerbSingularNon3.get(randVerb).getWord();
+			//returns a subject + verb
+			return subjectPlural+ " " + VerbSingularNon3.get(randVerb).getWord(); 
 		} else if (randomStructure == 3) {
 			//Noun verb Noun
-			int randNoun1 = (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
 			int randVerb = (int)Math.floor(Math.random()*(VerbSingular3.size()-2+1)+1);
 			int randNoun2 =  (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
+			//returns the subject plus a verb + a noun
 			return subject + " " + VerbSingular3.get(randVerb).getWord() + " " + NounsSingular.get(randNoun2).getWord();
 		} else if (randomStructure == 4) {
 			//Noun verb Noun Verb
 			int randNoun1 = (int)Math.floor(Math.random()*(NounsPlural.size()-2+1)+1);
 			int randVerb1 = (int)Math.floor(Math.random()*(VerbSingularNon3.size()-2+1)+1);
-			int randNoun2 =  (int)Math.floor(Math.random()*(NounsPlural.size()-2+1)+1);
 			int randAdv = (int)Math.floor(Math.random()*(Adverbs.size()-2+1)+1);
+			//returns and I statement + a verb + a noun + adverb
 			return "I " + VerbSingularNon3.get(randVerb1).getWord()+" " + NounsPlural.get(randNoun1).getWord()+" "+ Adverbs.get(randAdv).getWord();
-//			return NounsPlural.get(randNoun1).getWord()+ " " + VerbSingularNon3.get(randVerb1).getWord() + " " + NounsSingular.get(randNoun2).getWord() + " " + Adverbs.get(randAdv).getWord();
 		} else if (randomStructure == 5){
 			//Noun verb noun adjective
-			int randNoun1 = (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
-			int randVerb = (int)Math.floor(Math.random()*(VerbSingular3.size()-2+1)+1);
-			int randNoun2 =  (int)Math.floor(Math.random()*(NounsSingular.size()-2+1)+1);
-			int randAdverb = (int)Math.floor(Math.random()*(Adverbs.size()-2+1)+1);
-			return "I dislike " + NounsSingular.get(randNoun1).getWord(); 
-//			return NounsSingular.get(randNoun1).getWord()+ " "+ VerbSingular3.get(randVerb).getWord()+" "+ NounsSingular.get(randNoun2).getWord() + " "+ Adverbs.get(randAdverb).getWord();
+			//Returns an opinion on the statement
+			return "I dislike " + subject; 
 		} else if (randomStructure == 6){
-			int randNoun =  (int)Math.floor(Math.random()*(NounsPlural.size()-2+1)+1);
+			//Returns a question for the user to create conversation
 			return "Tell me more about " + subject;
 		} else {
 			int randAdj = (int)Math.floor(Math.random()*(Adjectives.size()-2+1)+1);
+			//Returns a robot's opinion about itself
 			return "I am "  + Adjectives.get(randAdj).getWord();
 		}
 	}
 
 	
+	/*
+	 * Adds default values to a robot's vocab based off of difficulty level
+	 * @param level is the level of difficulty specified in the main
+	 */
 	public static void difficultyLevel(int level) {
 		if (level == 1) {
 			NounsSingular.add(new SingularNoun("Horse"));
@@ -464,9 +475,9 @@ public class English {
 			VerbSingularNon3.add(new VerbSingularNon3("help"));
 			VerbSingularNon3.add(new VerbSingularNon3("make"));
 			
-			Adjectives.add(new Adjective("Green"));
-			Adjectives.add(new Adjective("Large"));
-			Adjectives.add(new Adjective("Fast"));
+			Adjectives.add(new Adjective("Talented"));
+			Adjectives.add(new Adjective("Kind"));
+			Adjectives.add(new Adjective("Happy"));
 			
 			Adverbs.add(new Adverb("Quckly"));
 			Adverbs.add(new Adverb("Quickly"));
@@ -485,10 +496,7 @@ public class English {
 
 		// tokenize sentence
 		System.out.println();
-//			for (String s: words) {
-////				System.out.println(s);
-//				English.whatWord(s);
-//			}
+
 		
 		String[] tokens = myCategorizer.tokenize(sentence);
 		System.out
@@ -496,12 +504,8 @@ public class English {
 	
 		
 		for (String s: tokens) {
-//			System.out.println(s);
-//			if (!words.contains(s) && words.isEmpty() == true) {
-//				words.add(s);
-//			}
-			CurrentWords.add(s);
-			words.add(s);
+			CurrentWords.add(s); //add the tokens to current words
+			words.add(s); //add tokens to words
 		}
 		
 		return tokens;
@@ -523,10 +527,9 @@ public class English {
 		
 		for (String posToken : posTokens) {
 			PartsOfSpeech.add(posToken);
-//			whatWord(posToken);
 		}
 		
-		whatWord(PartsOfSpeech, CurrentWords);
+		whatWord(PartsOfSpeech, CurrentWords); //try to classify words
 		
 		return posTokens;
 
@@ -573,12 +576,8 @@ public class English {
 		// find most likely category
 		double[] probabilitiesOfOutcomes = myCategorizer.categorize(finalTokens);
 		String category = myCategorizer.getBestCategory(probabilitiesOfOutcomes);
-//		System.out.println(category);
+
 		return category;
-//		for (int i = 0;  i < finalTokens.length; i++) {
-//			System.out.println(finalTokens[i]);
-//		}
-//		return " ";
 
 	}
 
